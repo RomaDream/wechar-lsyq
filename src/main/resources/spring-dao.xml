@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	   xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring 
+       						http://mybatis.org/schema/mybatis-spring.xsd 
+							http://www.springframework.org/schema/aop 
+					        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd 
+					        http://www.springframework.org/schema/security 
+					        http://www.springframework.org/schema/security/spring-security-3.2.xsd 
+					        http://www.springframework.org/schema/beans 
+					        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd 
+					        http://www.springframework.org/schema/data/jpa 
+					        http://www.springframework.org/schema/data/jpa/spring-jpa-1.3.xsd 
+					        http://www.springframework.org/schema/tx 
+					        http://www.springframework.org/schema/tx/spring-tx-4.0.xsd 
+					        http://www.springframework.org/schema/context 
+					        http://www.springframework.org/schema/context/spring-context-4.0.xsd
+					        ">
+    
+    <!-- 该包下的类支持注解，表示会被当作{@code mybatis mapper}处理 配置了之后表示可以自动引入mapper类 -->
+    <mybatis:scan base-package="com.nk.simple.dao,com.nk.system.dao,com.wechat.api"/>
+    
+    
+    <!-- 引入属性文件 
+    <context:property-placeholder location="classpath:configuration.properties"/>
+    -->
+    <bean class="com.nk.common.DecryptPropertyPlaceholderConfigurer">
+    	<property name="location" value="classpath:configuration.properties"/>
+    </bean>
+    
+    
+	<!--数据库连接 com.alibaba.druid.pool.DruidDataSource org.apache.commons.dbcp.BasicDataSource -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+	    <property name="url" value="${jdbc.url}"/>
+	    <property name="username" value="${jdbc.username}"/>
+	    <property name="password" value="${encrypt_password}"/>
+		<property name="initialSize"><value>25</value></property>
+	    <property name="maxActive"><value>200</value></property>
+	    <property name="minIdle"><value>1</value></property>
+	    <property name="maxWait"><value>60000</value></property>
+	    <property name="filters"><value>stat</value></property>
+	    <property name="removeAbandoned"><value>true</value></property>
+	    <property name="removeAbandonedTimeout"><value>180</value></property>
+	    <property name="timeBetweenEvictionRunsMillis"><value>30000</value></property>
+	    <property name="minEvictableIdleTimeMillis"><value>300000</value></property>
+ 	</bean>
+ 	
+ 	<!-- mybatis配置 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:sqlMapConfig.xml"/>
+        <!--  
+        <property name="mapperLocations" value="classpath:com/nk/simple/dao/mybatis/*.xml"/>
+        -->
+    </bean>
+    <!-- 
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    	<property name="basePackage" value="com.nk.simple.dao"/>
+    </bean>
+    -->
+    
+    <!-- 配置SqlSessionTemplate -->
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory" />
+    </bean>
+    
+    <!-- 事务配置 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <!-- 使用annotation注解方式配置事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    
+    
+</beans>
+
+
+
+
+
+
+
+
+
+
+
